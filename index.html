@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#166534">
+  <title>TOKO ZIDNI - Kasir Warung</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    :root{--green:#166534;--green2:#15803d;--bg:#f3f6f4;--ink:#17231b;--muted:#647067;--line:#e1e8e3;--white:#fff;--red:#b91c1c;--orange:#ea580c;--blue:#0284c7}
+    *{box-sizing:border-box}html,body{width:100%;overflow-x:hidden}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+    .topbar{background:var(--green);color:white;padding:15px 14px 18px;border-radius:0 0 20px 20px}
+    .brand{display:flex;align-items:center;gap:10px}.logo{width:40px;height:40px;border-radius:12px;background:#ffffff20;display:grid;place-items:center;font-size:22px}
+    h1{font-size:19px;margin:0}.subtitle{font-size:11px;margin:3px 0 0;opacity:.9}
+    main{width:100%;max-width:760px;margin:auto;padding:12px 10px 40px}
+    
+    .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:5px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:white;font-weight:700;font-size:11px;white-space:nowrap;color:var(--ink);cursor:pointer}
+    .tab.active{background:var(--green);color:white;border-color:var(--green)}
+    .tab.pos-tab{border-color:var(--orange);color:var(--orange)}.tab.pos-tab.active{background:var(--orange);color:white}
+    
+    .panel{background:white;border:1px solid var(--line);border-radius:15px;padding:12px;margin-bottom:12px;box-shadow:0 2px 6px #173b2408}
+    h2{font-size:15px;margin:0 0 10px}
+    .hint{font-size:11px;color:var(--muted);line-height:1.4;margin:-4px 0 10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.full{grid-column:1/-1}
+    label{font-size:11px;font-weight:700;color:#35433a}input,select,textarea{width:100%;min-height:42px;border:1px solid #cfd9d1;border-radius:10px;padding:8px 10px;font-size:13px;background:white;color:var(--ink)}
+    input:focus,select:focus,textarea:focus{outline:2px solid #86efac;border-color:var(--green2)}
+    .results{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.result{background:#edf7ef;border-radius:10px;padding:10px}.result small{display:block;font-size:10px;color:var(--muted)}.result strong{display:block;font-size:15px;margin-top:5px;color:var(--green)}
+    .btns{display:flex;gap:8px;margin-top:12px}.btn{border:0;border-radius:10px;padding:10px 12px;font-weight:700;font-size:12px;cursor:pointer;min-height:42px;display:flex;align-items:center;justify-content:center}
+    .primary{background:var(--green);color:white;flex:1}.secondary{background:#e8eee9;color:var(--ink)}.pos-btn{background:var(--orange);color:white;width:100%;font-size:15px}
+    .danger{background:#fee2e2;color:var(--red)}
+    .message{font-size:11px;line-height:1.4;margin-top:8px;color:var(--muted);overflow-wrap:anywhere;padding:8px;border-radius:8px}.message.error{color:var(--red);background:#fef2f2}.message.ok{color:var(--green);background:#f0fdf4}
+    .search{margin-bottom:8px}
+    .product{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+    .product-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+    .product-name{font-weight:700;font-size:13px}
+    .small{font-size:10px;color:var(--muted);line-height:1.4;margin-top:4px}
+    .price{font-weight:700;color:var(--green);white-space:nowrap;font-size:13px}
+    .product-actions{display:flex;gap:6px;margin-top:8px}
+    .product-actions button{padding:6px 10px;font-size:10px;min-height:32px}
+    .empty{padding:15px;text-align:center;color:var(--muted);font-size:11px}.hidden{display:none!important}
+    .status{font-size:10px;color:#dcfce7;margin-top:10px}.footer{text-align:center;color:var(--muted);font-size:9px;padding:6px}
+    
+    .cart-item{border-bottom:1px dashed var(--line);padding:8px 0;display:flex;justify-content:space-between;align-items:center}
+    .cart-info{flex:1;min-width:0;padding-right:8px}
+    .cart-price{text-align:right;font-weight:700;font-size:13px;white-space:nowrap}
+    .qty-box{display:flex;align-items:center;gap:6px;margin-top:4px}
+    .qty-btn{background:#e8eee9;border:none;border-radius:5px;width:26px;height:26px;font-size:14px;font-weight:bold;cursor:pointer}
+    .del-btn{background:none;border:none;color:var(--red);font-size:18px;padding:0 6px;cursor:pointer}
+    .summary-box{background:#fff8f1;border:1px solid #ffedd5;border-radius:10px;padding:10px;margin-top:8px}
+    .summary-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;align-items:center}
+    .summary-row.total{font-weight:900;font-size:17px;color:var(--orange);border-top:1px dashed #fdba74;padding-top:8px;margin-top:4px;margin-bottom:0}
+
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:none;place-items:center;z-index:99;padding:12px}
+    .modal{background:white;width:100%;max-width:380px;border-radius:16px;padding:16px;box-shadow:0 8px 20px rgba(0,0,0,0.2)}
+    .modal h3{margin:0 0 12px;text-align:center;font-size:16px}
+    .quick-cash{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px}
+    .quick-cash button{background:#e8eee9;border:none;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:bold;white-space:nowrap}
+
+    #printArea{display:none}
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position: absolute; left: 0; top: 0; display: block; width: 55mm; margin: 0; padding: 0; font-family: monospace; font-size: 11px; color: black; line-height: 1.3; }
+      .p-center { text-align: center; } .p-bold { font-weight: bold; }
+      .p-divider { border-bottom: 1px dashed black; margin: 5px 0; }
+      .p-row { display: flex; justify-content: space-between; }
+      .barcode-label { text-align: center; page-break-after: always; padding: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="logo">🛒</div><div><h1 id="shopTitle">TOKO ZIDNI</h1><p class="subtitle">Kasir, Suara & Laporan Terpadu</p></div></div>
+    <div class="status" id="connection">Menghubungkan ke database…</div>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab pos-tab active" data-view="pos">🛒 KASIR</button>
+      <button class="tab" data-view="report">📊 Laporan</button>
+      <button class="tab" data-view="expense">💸 Kas Keluar</button>
+      <button class="tab" data-view="form">＋ Tambah</button>
+      <button class="tab" data-view="list">▤ Stok</button>
+      <button class="tab" data-view="purchase">📥 Beli</button>
+    </div>
+
+    <!-- KASIR (POS) -->
+    <section id="posView">
+      <div class="panel" style="border-color:#fdba74">
+        <h2>Transaksi Kasir</h2>
+        <div style="display:flex; gap:6px; margin-bottom:10px">
+          <input list="posProductList" id="posSearch" placeholder="🔍 Scan, Ketik, atau Sebut Nama..." style="font-size:14px; border-color:var(--orange); flex:1" autocomplete="off">
+          <button class="btn secondary" type="button" onclick="openDevicePage('voice')" id="btnVoice" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:0 10px" title="Perintah Suara">🎤 Sebut</button>
+          <button class="btn secondary" type="button" onclick="openDevicePage('barcode')" style="background:#ffedd5;color:#ea580c;border:1px solid #fdba74;padding:0 10px">📷 Scan</button>
+          <button class="btn secondary" type="button" onclick="stopBarcodeScanner()" id="btnCloseCam" style="display:none; background:#fee2e2; color:#b91c1c; padding:0 8px">X</button>
+        </div>
+        <div id="voiceStatus" style="font-size:11px; color:var(--blue); margin-bottom:8px; font-weight:bold; display:none;">🎙️ Mendengarkan... Silakan sebut nama barang.</div>
+        <div id="reader" style="width:100%; max-width:320px; margin:0 auto 12px auto; display:none; border-radius:10px; overflow:hidden;"></div>
+        <datalist id="posProductList"></datalist>
+
+        <div id="posCartList" style="text-align:center; padding:15px; color:var(--muted); font-size:12px">Keranjang belanja kosong.</div>
+        <div class="summary-box" id="posSummaryBox" style="display:none">
+          <div class="summary-row"><span>Total Item:</span> <strong id="posTotalItem">0</strong></div>
+          <div class="summary-row"><span>Subtotal:</span> <strong id="posSubtotal">Rp0</strong></div>
+          <div class="summary-row"><span>Diskon (Rp):</span> <input type="number" id="posDiscount" value="0" min="0" style="width:90px;min-height:28px;text-align:right" oninput="calcPosTotal()"></div>
+          <div class="summary-row total"><span>TOTAL:</span> <span id="posTotal">Rp0</span></div>
+          <button class="btn pos-btn" style="margin-top:12px" onclick="openPaymentModal()">B A Y A R</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAPORAN TERPADU -->
+    <section id="reportView" class="hidden">
+      <div class="panel">
+        <h2>📊 Ringkasan Hari Ini</h2>
+        <div class="grid" style="margin-bottom:12px">
+          <div class="result"><small>Omzet Hari Ini</small><strong id="dashOmzet">Rp0</strong></div>
+          <div class="result"><small>Laba Kotor Hari Ini</small><strong id="dashProfit">Rp0</strong></div>
+        </div>
+        <button class="btn secondary" style="width:100%" onclick="loadReportData()">🔄 Muat Ulang Laporan</button>
+      </div>
+
+      <div class="panel">
+        <h2>🔥 Barang Terlaris Hari Ini</h2>
+        <div id="dashTopItems"><div class="empty">Belum ada penjualan.</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>⚠️ Peringatan Stok Menipis</h2>
+        <div id="dashLowStock"><div class="empty">Semua stok aman.</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>💰 Rekapitulasi Laba Rugi Bersih (Bulanan)</h2>
+        <p class="hint">Omzet - HPP (Laba Kotor) dikurangi Biaya Operasional (Kas Keluar) = Keuntungan Bersih.</p>
+        <div id="monthlyProfitList"><div class="empty">Memuat data bulanan…</div></div>
+      </div>
+    </section>
+
+    <!-- KAS KELUAR -->
+    <section id="expenseView" class="hidden">
+      <div class="panel">
+        <h2>💸 Catat Kas Keluar / Biaya Operasional</h2>
+        <form id="expenseForm">
+          <div class="grid">
+            <div class="field full">
+              <label>Kategori Pengeluaran *</label>
+              <select id="expCategory" required>
+                <option value="Listrik & Air">Listrik & Air</option>
+                <option value="Sewa Tempat / Ruko">Sewa Tempat / Ruko</option>
+                <option value="Kebersihan & Keamanan">Kebersihan & Keamanan</option>
+                <option value="Perlengkapan (Plastik/Kertas)">Perlengkapan (Plastik/Kertas)</option>
+                <option value="Gaji Karyawan">Gaji Karyawan</option>
+                <option value="Biaya Lain-lain">Biaya Lain-lain</option>
+              </select>
+            </div>
+            <div class="field full"><label>Nominal (Rp) *</label><input id="expNominal" type="number" min="1" required placeholder="Contoh: 150000"></div>
+            <div class="field full"><label>Metode Pembayaran</label><select id="expMethod"><option value="TUNAI">Tunai</option><option value="TRANSFER">Transfer</option></select></div>
+            <div class="field full"><label>Keterangan / Catatan</label><textarea id="expNote" rows="2" placeholder="Contoh: Bayar token listrik"></textarea></div>
+          </div>
+          <button class="btn primary" type="submit" id="saveExpBtn" style="width:100%; margin-top:12px">💾 Simpan Kas Keluar</button>
+          <div id="expMessage" class="message"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- FORM BARANG -->
+    <section id="formView" class="hidden">
+      <div class="panel">
+        <h2 id="formTitle">Tambah barang baru</h2>
+        <form id="productForm">
+          <input type="hidden" id="productId">
+          <div class="grid">
+            <div class="field full"><label>Nama barang *</label><input id="name" required maxlength="120" placeholder="Contoh: Mi instan goreng"></div>
+            <div class="field"><label>Barcode (kosong = otomatis)</label><input id="barcode" maxlength="80" placeholder="Scan / ketik"></div>
+            <div class="field"><label>Kategori</label><input id="category" maxlength="80" placeholder="Makanan"></div>
+            <div class="field"><label>Satuan dasar *</label><input id="baseUnit" required maxlength="30" value="pcs"></div>
+            <div class="field"><label>Satuan kemasan *</label><input id="packUnit" required maxlength="30" value="dus"></div>
+            <div class="field"><label>Isi per kemasan *</label><input id="packSize" required type="number" min="0.001" step="any" value="1"></div>
+            <div class="field"><label>Harga beli/kemasan (Rp) *</label><input id="buyPack" required type="number" min="0" step="any" value="0"></div>
+            <div class="field"><label>Biaya tambahan/kemasan (Rp)</label><input id="extraPack" type="number" min="0" step="any" value="0"></div>
+            <div class="field"><label>Target margin (%) *</label><input id="margin" required type="number" min="0" max="90" step="0.5" value="20"></div>
+            <div class="field"><label>Pembulatan</label><select id="rounding"><option value="100">Rp100</option><option value="500">Rp500</option><option value="1000">Rp1.000</option><option value="1">Tanpa</option></select></div>
+            <div class="field"><label>Harga jual (Rp)</label><input id="sellPrice" type="number" min="0" step="any" placeholder="Otomatis"></div>
+            <div class="field"><label>Stok minimum</label><input id="minStock" type="number" min="0" step="any" value="0"></div>
+            <div class="field full"><label>Stok awal</label><input id="initialStock" type="number" min="0" step="any" value="0"></div>
+          </div>
+          <div class="results">
+            <div class="result"><small>Modal/satuan</small><strong id="costPreview">Rp0</strong></div>
+            <div class="result"><small>Jual rekomendasi</small><strong id="recommendPreview">Rp0</strong></div>
+            <div class="result"><small>Laba/satuan</small><strong id="profitPreview">Rp0</strong></div>
+            <div class="result"><small>Margin aktual</small><strong id="marginPreview">0%</strong></div>
+          </div>
+          <div class="btns">
+            <button class="btn secondary" type="button" onclick="resetForm()">Kosongkan</button>
+            <button class="btn primary" type="submit" id="saveBtn">Simpan</button>
+          </div>
+          <div id="formMessage" class="message"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- DAFTAR BARANG -->
+    <section id="listView" class="hidden">
+      <div class="panel">
+        <h2>Daftar Barang & Label</h2>
+        <input id="search" class="search" placeholder="Cari nama / kategori / barcode…">
+        <div id="productList"><div class="empty">Memuat data barang…</div></div>
+        <button class="btn secondary" style="margin-top:10px" onclick="loadProducts()" type="button">Muat ulang</button>
+      </div>
+    </section>
+
+    <!-- PEMBELIAN -->
+    <section id="purchaseView" class="hidden">
+      <div class="panel">
+        <h2>Penerimaan Barang (Stok Masuk)</h2>
+        <div class="field full" style="margin-bottom:10px"><label>Nama Pemasok</label><input id="purSupplier" placeholder="Toko Grosir A"></div>
+        <div style="background:#e8eee9; padding:10px; border-radius:10px; margin-bottom:12px;">
+          <h3 style="font-size:12px; margin:0 0 8px;">Cari Barang</h3>
+          <input list="purProductList" id="purSearch" class="search" placeholder="Ketik nama barang...">
+          <datalist id="purProductList"></datalist>
+          <div class="grid" id="purItemForm" style="display:none; margin-top:8px;">
+            <div class="field"><label>Jumlah <span id="purUnitLabel">Kemasan</span></label><input id="purQty" type="number" min="1" value="1"></div>
+            <div class="field"><label>Harga Beli/Kemasan</label><input id="purPrice" type="number" min="0"></div>
+            <button class="btn primary" style="grid-column:1/-1" onclick="addToCart()">+ Tambah</button>
+          </div>
+        </div>
+        <div id="cartList" class="empty">Daftar beli masih kosong.</div>
+        <div class="summary-box" id="purSummaryBox" style="display:none;">
+          <div class="summary-row"><span>Subtotal:</span> <strong id="purSubtotal">Rp0</strong></div>
+          <div class="summary-row"><span>Diskon:</span> <input type="number" id="purDiscount" value="0" min="0" oninput="calcPurTotal()"></div>
+          <div class="summary-row"><span>Ongkir:</span> <input type="number" id="purExtra" value="0" min="0" oninput="calcPurTotal()"></div>
+          <div class="summary-row total"><span>Total:</span> <span id="purTotal">Rp0</span></div>
+          <div class="field full" style="margin-top:12px"><label>Metode Pembayaran</label>
+            <select id="purMethod"><option value="TUNAI">Tunai</option><option value="TEMPO">Tempo</option></select>
+          </div>
+          <button class="btn primary" style="width:100%; margin-top:12px;" id="btnSavePurchase" onclick="submitPurchase()">💾 Simpan & Tambah Stok</button>
+          <div id="purMessage" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">TOKO ZIDNI • Google Sheets POS</div>
+  </main>
+
+  <!-- MODAL PEMBAYARAN -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal">
+      <h3>Selesaikan Pembayaran</h3>
+      <div style="font-size:22px; font-weight:900; color:var(--orange); text-align:center; margin-bottom:12px" id="payTotalAmount">Rp0</div>
+      <div class="field full"><label>Metode</label><select id="payMethod"><option value="TUNAI">Tunai</option><option value="TRANSFER">Transfer/QRIS</option></select></div>
+      <div class="field full" style="margin-top:8px" id="cashInputArea">
+        <label>Uang Diterima (Rp)</label>
+        <input type="number" id="payReceived" style="font-size:16px; font-weight:bold" oninput="calcChange()">
+        <div class="quick-cash" style="margin-top:6px" id="quickCashButtons"></div>
+      </div>
+      <div style="background:#f3f6f4; padding:10px; border-radius:8px; margin-top:12px; text-align:center">
+        <div style="font-size:11px; color:var(--muted)">Kembalian</div>
+        <div style="font-size:20px; font-weight:bold; color:var(--green)" id="payChange">Rp0</div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:15px">
+        <button class="btn secondary" style="flex:1" onclick="$('paymentModal').style.display='none'">Batal</button>
+        <button class="btn primary" style="flex:2" id="btnConfirmPay" onclick="submitSale()">Simpan & Cetak</button>
+      </div>
+      <div id="payMessage" class="message" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="printArea"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    // Penghubung hasil Voice dan Barcode dari halaman GitHub Pages
+const DEVICE_PAGE_URL =
+  'https://fajarpanfic-18.github.io/toko-zidni-device/';
+
+function openDevicePage(mode) {
+  const url = DEVICE_PAGE_URL + '?mode=' + encodeURIComponent(mode);
+
+  const deviceWindow = window.open(
+    url,
+    'TokoZidniDevice',
+    'width=480,height=760'
+  );
+
+  if (!deviceWindow) {
+    alert('Halaman perangkat diblokir browser. Izinkan pop-up untuk aplikasi TOKO ZIDNI.');
+  }
+}
+
+// Menerima hasil dari halaman Voice dan Barcode
+window.addEventListener('message', function(event) {
+  if (event.origin !== 'https://fajarpanfic-18.github.io') return;
+
+  if (!event.data || event.data.source !== 'TOKO_ZIDNI_DEVICE') return;
+
+  if (event.data.type === 'RESULT') {
+    const result = String(event.data.value || '').trim();
+
+    if (!result) return;
+
+    $('posSearch').value = result;
+
+    // Jalankan pencarian produk yang sudah ada
+    $('posSearch').dispatchEvent(new Event('change'));
+  }
+});
+    let products = [];
+    let connected = false;
+    let shopName = "TOKO ZIDNI";
+    const rupiah = n => 'Rp' + Math.round(Number(n)||0).toLocaleString('id-ID');
+    const num = id => Number($(id).value || 0);
+
+    function switchView(view) {
+      document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+      $(view + 'View').classList.remove('hidden');
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+      if (view === 'list' || view === 'purchase') loadProducts();
+      if (view === 'report') loadReportData();
+      if (view === 'purchase') { if(!purchaseReqId) purchaseReqId = generateReqId(); }
+      if (view === 'pos') { if(!posReqId) posReqId = generateReqId(); }
+      if (view !== 'pos') stopBarcodeScanner();
+    }
+    document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+
+    function startVoiceSearch() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Maaf, browser Anda tidak mendukung fitur perintah suara.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      $('voiceStatus').style.display = 'block';
+      $('btnVoice').textContent = '🎙️ Mendengar...';
+
+      recognition.onresult = function(event) {
+        const spokenText = event.results[0][0].transcript.trim();
+        $('voiceStatus').style.display = 'none';
+        $('btnVoice').textContent = '🎤 Sebut';
+        
+        $('posSearch').value = spokenText;
+        const searchEvt = new Event('change');
+        $('posSearch').dispatchEvent(searchEvt);
+      };
+
+      recognition.onerror = function(event) {
+        $('voiceStatus').style.display = 'none';
+        $('btnVoice').textContent = '🎤 Sebut';
+        alert('Gagal mendengarkan suara: ' + event.error);
+      };
+
+      recognition.onend = function() {
+        $('voiceStatus').style.display = 'none';
+        $('btnVoice').textContent = '🎤 Sebut';
+      };
+
+      recognition.start();
+    }
+
+    let html5QrCode = null;
+    function startBarcodeScanner() {
+      const readerDiv = $('reader');
+      readerDiv.style.display = 'block';
+      $('btnCloseCam').style.display = 'block';
+      if (!html5QrCode) { html5QrCode = new Html5Qrcode("reader"); }
+      html5QrCode.start(
+        { facingMode: "environment" }, 
+        { fps: 10, qrbox: { width: 220, height: 130 } }, 
+        (decodedText) => {
+          $('posSearch').value = decodedText;
+          const event = new Event('change');
+          $('posSearch').dispatchEvent(event);
+          stopBarcodeScanner();
+        },
+        (errorMessage) => {}
+      ).catch(err => {
+        alert("Gagal membuka kamera.");
+        readerDiv.style.display = 'none';
+        $('btnCloseCam').style.display = 'none';
+      });
+    }
+
+    function stopBarcodeScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          $('reader').style.display = 'none'; $('btnCloseCam').style.display = 'none';
+        }).catch(() => {
+          $('reader').style.display = 'none'; $('btnCloseCam').style.display = 'none';
+        });
+      }
+    }
+
+    function printBarcodeLabel(id) {
+      const p = products.find(x => x.id === id);
+      if(!p || !p.barcode) return alert('Barang/barcode tidak valid.');
+      const labelHtml = `
+        <div class="barcode-label">
+          <div style="font-weight:bold; font-size:11px; margin-bottom:2px">${shopName}</div>
+          <div style="font-size:10px; margin-bottom:3px; max-width:50mm; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</div>
+          <svg id="printBarcodeSvg"></svg>
+          <div style="font-weight:bold; font-size:12px; margin-top:2px">${rupiah(p.sellPrice)}</div>
+        </div>
+      `;
+      $('printArea').innerHTML = labelHtml;
+      try {
+        JsBarcode("#printBarcodeSvg", p.barcode, { format: "CODE128", width: 1.4, height: 32, displayValue: true, fontSize: 9, margin: 2 });
+        window.print();
+      } catch(e) { alert('Gagal mencetak: ' + e.message); }
+    }
+
+    function loadReportData() {
+      if(!connected) return;
+      google.script.run.withSuccessHandler(res => {
+        const d = res.daily;
+        $('dashOmzet').textContent = rupiah(d.omzetToday);
+        $('dashProfit').textContent = rupiah(d.labaToday);
+        $('dashTopItems').innerHTML = d.topItems.length ? d.topItems.map(i => `<div class="cart-item"><div>${i.name}</div><strong>${i.qty} terjual</strong></div>`).join('') : '<div class="empty">Belum ada penjualan.</div>';
+        $('dashLowStock').innerHTML = d.lowStockItems.length ? d.lowStockItems.map(i => `<div class="cart-item" style="color:var(--red)"><div>${i.name}</div><strong>Stok: ${i.stock} (Min: ${i.min})</strong></div>`).join('') : '<div class="empty">Semua stok aman.</div>';
+
+        const m = res.monthly;
+        if(!m.length) {
+          $('monthlyProfitList').innerHTML = '<div class="empty">Belum ada data transaksi bulanan.</div>';
+          return;
+        }
+        $('monthlyProfitList').innerHTML = m.map(item => {
+          let netColor = item.netProfit >= 0 ? 'var(--green)' : 'var(--red)';
+          let netText = item.netProfit >= 0 ? 'Keuntungan Bersih' : 'Kerugian Bersih';
+          return `
+            <div class="product" style="border-left:4px solid ${netColor}">
+              <strong style="font-size:14px; color:${netColor}; display:block; margin-bottom:6px">${item.label}</strong>
+              <div style="font-size:11px; display:flex; justify-content:space-between; margin-bottom:3px"><span>Omzet:</span> <strong>${rupiah(item.omzet)}</strong></div>
+              <div style="font-size:11px; display:flex; justify-content:space-between; margin-bottom:3px"><span>HPP (Modal):</span> <strong style="color:var(--red)">- ${rupiah(item.hpp)}</strong></div>
+              <div style="font-size:11px; display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px dashed var(--line); padding-bottom:3px"><span>= Laba Kotor:</span> <strong style="color:var(--green)">${rupiah(item.grossProfit)}</strong></div>
+              <div style="font-size:11px; display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px dashed var(--line); padding-bottom:3px"><span>Kas Keluar (Operasional):</span> <strong style="color:var(--red)">- ${rupiah(item.expense)}</strong></div>
+              <div style="font-size:13px; display:flex; justify-content:space-between; font-weight:bold; margin-top:5px">
+                <span>${netText}:</span> <span style="color:${netColor}">${rupiah(item.netProfit)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }).getCombinedReport();
+    }
+
+    $('expenseForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if(!connected) return showMsg('expMessage', 'Belum terhubung ke database.', true);
+      const payload = {
+        category: $('expCategory').value,
+        nominal: num('expNominal'),
+        method: $('expMethod').value,
+        note: $('expNote').value
+      };
+      $('saveExpBtn').disabled = true; $('saveExpBtn').textContent = 'Menyimpan...';
+      google.script.run.withSuccessHandler(res => {
+        $('saveExpBtn').disabled = false; $('saveExpBtn').textContent = '💾 Simpan Kas Keluar';
+        showMsg('expMessage', res.message, false, true);
+        $('expNominal').value = ''; $('expNote').value = '';
+      }).withFailureHandler(err => {
+        $('saveExpBtn').disabled = false; $('saveExpBtn').textContent = '💾 Simpan Kas Keluar';
+        showMsg('expMessage', err.message || err, true);
+      }).saveExpense(payload);
+    });
+
+    let posCart = []; let posReqId = ''; let lastPosTotal = 0;
+    function generateReqId() { return 'TRX-' + Date.now() + '-' + Math.floor(Math.random()*1000); }
+
+    function updatePosDatalist() {
+      $('posProductList').innerHTML = products.map(p => `<option value="${p.barcode}">${p.name} | Rp${p.sellPrice} | Stok: ${p.stock}</option>`).join('');
+    }
+
+    $('posSearch').addEventListener('change', function(e) {
+      const val = e.target.value.trim().toLowerCase(); if(!val) return;
+      const p = products.find(x => x.barcode.toLowerCase() === val || x.name.toLowerCase() === val);
+      if(p) {
+        if(p.stock <= 0) { alert('Stok ' + p.name + ' habis!'); $('posSearch').value = ''; return; }
+        const exists = posCart.find(c => c.id === p.id);
+        if(exists) { if (exists.qty + 1 > p.stock) alert('Stok sisa: ' + p.stock); else exists.qty += 1; } 
+        else { posCart.push({ id: p.id, name: p.name, price: p.sellPrice, stock: p.stock, qty: 1, baseUnit: p.baseUnit }); }
+        $('posSearch').value = ''; renderPosCart();
+      }
+    });
+
+    function renderPosCart() {
+      if(posCart.length === 0) { $('posCartList').innerHTML = 'Keranjang belanja kosong.'; $('posSummaryBox').style.display = 'none'; return; }
+      $('posSummaryBox').style.display = 'block';
+      $('posCartList').innerHTML = posCart.map((c, i) => `
+        <div class="cart-item">
+          <div class="cart-info"><div style="font-weight:bold;font-size:12px">${c.name}</div><div style="font-size:10px;color:var(--muted)">${rupiah(c.price)}</div></div>
+          <div class="qty-box"><button class="qty-btn" onclick="updatePosQty(${i}, -1)">-</button><span style="font-weight:bold;width:18px;text-align:center">${c.qty}</span><button class="qty-btn" onclick="updatePosQty(${i}, 1)">+</button></div>
+          <div class="cart-price" style="width:70px">${rupiah(c.qty * c.price)}</div><button class="del-btn" onclick="removePosItem(${i})">×</button>
+        </div>`).join(''); calcPosTotal();
+    }
+    function updatePosQty(i, chg) {
+      const newQty = posCart[i].qty + chg;
+      if (newQty <= 0) removePosItem(i); else if (newQty > posCart[i].stock) alert('Stok sisa ' + posCart[i].stock);
+      else { posCart[i].qty = newQty; renderPosCart(); }
+    }
+    function removePosItem(i) { posCart.splice(i, 1); renderPosCart(); }
+
+    function calcPosTotal() {
+      const sub = posCart.reduce((s, c) => s + (c.qty * c.price), 0);
+      lastPosTotal = sub - num('posDiscount');
+      $('posTotalItem').textContent = posCart.reduce((s, c) => s + c.qty, 0);
+      $('posSubtotal').textContent = rupiah(sub); $('posTotal').textContent = rupiah(lastPosTotal);
+    }
+
+    function openPaymentModal() {
+      if(lastPosTotal < 0) return alert('Total tidak valid.');
+      posReqId = generateReqId(); $('payTotalAmount').textContent = rupiah(lastPosTotal);
+      $('payReceived').value = lastPosTotal; $('payChange').textContent = 'Rp0'; $('payMethod').value = 'TUNAI';
+      generateQuickCash(lastPosTotal); $('paymentModal').style.display = 'grid';
+    }
+
+    $('payMethod').addEventListener('change', e => {
+      $('cashInputArea').style.display = e.target.value === 'TUNAI' ? 'block' : 'none';
+      $('payReceived').value = lastPosTotal; calcChange();
+    });
+
+    function generateQuickCash(total) {
+      const btns = [total]; [2000, 5000, 10000, 20000, 50000, 100000].forEach(n => { if(n > total) btns.push(n); });
+      $('quickCashButtons').innerHTML = btns.slice(0, 4).map(v => `<button type="button" onclick="$('payReceived').value=${v};calcChange()">${rupiah(v)}</button>`).join('');
+    }
+    function calcChange() { $('payChange').textContent = rupiah(Math.max(0, num('payReceived') - lastPosTotal)); }
+
+    function submitSale() {
+      const rec = num('payReceived');
+      if($('payMethod').value === 'TUNAI' && rec < lastPosTotal) return alert('Uang kurang!');
+      const payload = { reqId: posReqId, items: posCart, discount: num('posDiscount'), method: $('payMethod').value, received: rec };
+
+      $('btnConfirmPay').disabled = true; $('btnConfirmPay').textContent = 'Menyimpan...'; showMsg('payMessage', 'Menyimpan...', false, false);
+      google.script.run.withSuccessHandler(res => {
+        $('btnConfirmPay').disabled = false; $('btnConfirmPay').textContent = 'Simpan & Cetak'; $('paymentModal').style.display = 'none';
+        buildReceipt(res.transId, payload, res.total, res.change, res.date);
+        posCart = []; $('posDiscount').value = '0'; renderPosCart(); loadProducts(); window.print();
+      }).withFailureHandler(err => {
+        $('btnConfirmPay').disabled = false; $('btnConfirmPay').textContent = 'Simpan & Cetak'; showMsg('payMessage', err.message||err, true);
+      }).saveSale(payload);
+    }
+
+    function buildReceipt(transId, payload, total, change, date) {
+      let html = `<div class="p-center p-bold" style="font-size:13px; margin-bottom:4px">${shopName}</div><div class="p-center" style="margin-bottom:6px">${date}<br>Nota: ${transId}</div><div class="p-divider"></div>`;
+      payload.items.forEach(i => html += `<div style="margin-bottom:3px"><div>${i.name}</div><div class="p-row"><span>${i.qty} x ${rupiah(i.price)}</span><span>${rupiah(i.qty * i.price)}</span></div></div>`);
+      html += `<div class="p-divider"></div>`;
+      if(payload.discount > 0) html += `<div class="p-row"><span>Diskon</span><span>-${rupiah(payload.discount)}</span></div>`;
+      html += `<div class="p-row p-bold" style="font-size:12px"><span>TOTAL</span><span>${rupiah(total)}</span></div><div class="p-row"><span>Dibayar</span><span>${rupiah(payload.received)}</span></div>`;
+      if(payload.method === 'TUNAI') html += `<div class="p-row"><span>Kembali</span><span>${rupiah(change)}</span></div>`;
+      html += `<div class="p-divider"></div><div class="p-center" style="margin-top:8px">Terima Kasih</div>`;
+      $('printArea').innerHTML = html;
+    }
+
+    function calculate() {
+      const pack = num('packSize'), buy = num('buyPack'), extra = num('extraPack'), margin = num('margin'), rounding = Math.max(1, num('rounding'));
+      const cost = pack > 0 ? (buy + extra) / pack : 0;
+      const raw = margin >= 0 && margin < 100 ? cost / (1 - margin/100) : 0;
+      const recommended = raw > 0 ? Math.ceil((raw - 1e-8) / rounding) * rounding : 0;
+      const custom = num('sellPrice');
+      const sell = custom > 0 ? custom : recommended;
+      const actualMargin = sell > 0 ? (sell-cost)/sell*100 : 0;
+      $('costPreview').textContent = rupiah(cost);
+      $('recommendPreview').textContent = rupiah(recommended);
+      $('profitPreview').textContent = rupiah(sell-cost);
+      $('marginPreview').textContent = actualMargin.toLocaleString('id-ID',{maximumFractionDigits:2}) + '%';
+    }
+    ['packSize','buyPack','extraPack','margin','rounding','sellPrice'].forEach(id => $(id).addEventListener('input', calculate));
+
+    function resetForm() {
+      $('productForm').reset(); $('productId').value = ''; $('baseUnit').value = 'pcs'; $('packUnit').value = 'dus';
+      $('packSize').value = '1'; $('buyPack').value = '0'; $('extraPack').value = '0';
+      $('margin').value = '20'; $('rounding').value = '100'; $('minStock').value = '0'; $('initialStock').value = '0';
+      $('formTitle').textContent = 'Tambah barang baru'; $('saveBtn').textContent = 'Simpan';
+      $('formMessage').className = 'message'; $('formMessage').textContent = ''; calculate();
+    }
+
+    $('productForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!connected) return showMsg('formMessage','Database belum terhubung.',true);
+      const editMode = Boolean($('productId').value);
+      const form = {
+        id: $('productId').value, name: $('name').value, barcode: $('barcode').value, category: $('category').value,
+        baseUnit: $('baseUnit').value, packUnit: $('packUnit').value, packSize: num('packSize'),
+        buyPack: num('buyPack'), extraPack: num('extraPack'), marginPct: num('margin'),
+        rounding: num('rounding'), sellPrice: num('sellPrice'), useRecommended: !num('sellPrice'),
+        minStock: num('minStock'), initialStock: editMode ? 0 : num('initialStock')
+      };
+      $('saveBtn').disabled = true; $('saveBtn').textContent = 'Menyimpan…';
+      google.script.run.withSuccessHandler(res => {
+        $('saveBtn').disabled = false; $('saveBtn').textContent = 'Simpan';
+        showMsg('formMessage', res.message, false, true);
+        resetForm(); loadProducts();
+      }).withFailureHandler(err => {
+        $('saveBtn').disabled = false; $('saveBtn').textContent = 'Simpan';
+        showMsg('formMessage', err.message || err, true);
+      }).saveProduct(form);
+    });
+
+    function showMsg(id, txt, isErr=false, isOk=false) {
+      const el = $(id); el.textContent = txt; el.className = 'message ' + (isErr ? 'error' : isOk ? 'ok' : '');
+    }
+
+    function loadProducts() {
+      if (!connected) return;
+      google.script.run.withSuccessHandler(data => { products = data || []; renderProducts(); updateDatalist(); updatePosDatalist(); })
+        .withFailureHandler(err => $('productList').innerHTML = '<div class="empty" style="color:red">Gagal: '+err+'</div>')
+        .getProducts();
+    }
+    $('search').addEventListener('input', renderProducts);
+
+    function renderProducts() {
+      const q = $('search').value.trim().toLowerCase();
+      const filtered = products.filter(p => [p.name,p.barcode,p.category].join(' ').toLowerCase().includes(q));
+      if (!filtered.length) return $('productList').innerHTML = '<div class="empty">Tidak ditemukan.</div>';
+      $('productList').innerHTML = filtered.map(p => `
+        <article class="product">
+          <div class="product-head">
+            <div>
+              <div class="product-name">${p.name}</div>
+              <div class="small">${p.category||'-'} · Barcode: ${p.barcode||'-'}</div>
+              <div class="small">Modal: ${rupiah(p.cost)} · Stok: ${p.stock} ${p.baseUnit}</div>
+            </div>
+            <div class="price">${rupiah(p.sellPrice)}</div>
+          </div>
+          <div class="product-actions">
+            <button class="btn secondary" onclick="editProduct('${p.id}')">✏️ Edit</button>
+            <button class="btn secondary" style="background:#e0f2fe; color:#0369a1" onclick="printBarcodeLabel('${p.id}')">🖨️ Cetak</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function editProduct(id) {
+      const p = products.find(x => x.id === id); if (!p) return;
+      ['id','name','barcode','category','baseUnit','packUnit','packSize','buyPack','extraPack','sellPrice','minStock'].forEach(k => $(k==='id'?'productId':k).value = p[k]||'');
+      $('margin').value = p.margin * 100; $('initialStock').value = 0;
+      $('formTitle').textContent = 'Edit barang'; $('saveBtn').textContent = 'Simpan';
+      calculate(); switchView('form'); window.scrollTo(0,0);
+    }
+
+    let cart = []; let selectedPurProduct = null; let purchaseReqId = '';
+    function generatePurReqId() { return 'REQ-' + Date.now() + '-' + Math.floor(Math.random()*1000); }
+    function updateDatalist() {
+      $('purProductList').innerHTML = products.map(p => `<option value="${p.name}">Barcode: ${p.barcode} | Stok: ${p.stock}</option>`).join('');
+    }
+
+    $('purSearch').addEventListener('change', function(e) {
+      const val = e.target.value;
+      selectedPurProduct = products.find(p => p.name === val || p.barcode === val);
+      if(selectedPurProduct) {
+        $('purItemForm').style.display = 'grid'; $('purUnitLabel').textContent = selectedPurProduct.packUnit;
+        $('purPrice').value = selectedPurProduct.buyPack; $('purQty').value = 1;
+      } else { $('purItemForm').style.display = 'none'; }
+    });
+
+    function addToCart() {
+      if(!selectedPurProduct) return;
+      const qty = num('purQty'); const price = num('purPrice'); if(qty <= 0) return alert('Jumlah harus > 0');
+      const exists = cart.find(c => c.id === selectedPurProduct.id);
+      if(exists) { exists.qtyPack += qty; exists.buyPrice = price; } 
+      else { cart.push({ id: selectedPurProduct.id, name: selectedPurProduct.name, qtyPack: qty, packUnit: selectedPurProduct.packUnit, buyPrice: price, packSize: selectedPurProduct.packSize }); }
+      $('purSearch').value = ''; $('purItemForm').style.display = 'none'; selectedPurProduct = null; renderCart();
+    }
+
+    function renderCart() {
+      if(cart.length === 0) { $('cartList').innerHTML = '<div class="empty">Daftar beli masih kosong.</div>'; $('purSummaryBox').style.display = 'none'; return; }
+      $('purSummaryBox').style.display = 'block';
+      $('cartList').innerHTML = cart.map((c, i) => `
+        <div class="cart-item">
+          <div class="cart-info"><div style="font-size:12px;font-weight:bold">${c.name}</div><div style="font-size:10px;color:var(--muted)">${c.qtyPack} ${c.packUnit} × ${rupiah(c.buyPrice)}</div></div>
+          <div class="cart-price">${rupiah(c.qtyPack * c.buyPrice)}</div><button class="del-btn" onclick="removeFromCart(${i})">×</button>
+        </div>`).join(''); calcPurTotal();
+    }
+    function removeFromCart(i) { cart.splice(i, 1); renderCart(); }
+    function calcPurTotal() {
+      const sub = cart.reduce((sum, c) => sum + (c.qtyPack * c.buyPrice), 0);
+      const dis = num('purDiscount'); const ext = num('purExtra'); const tot = sub - dis + ext;
+      $('purSubtotal').textContent = rupiah(sub); $('purTotal').textContent = rupiah(tot); return {tot};
+    }
+
+    function submitPurchase() {
+      if(cart.length === 0) return alert('Keranjang kosong!');
+      if(calcPurTotal().tot < 0) return alert('Total tidak boleh negatif!');
+      if(!purchaseReqId) purchaseReqId = generatePurReqId();
+
+      const payload = { reqId: purchaseReqId, supplier: $('purSupplier').value, items: cart, discount: num('purDiscount'), extraCost: num('purExtra'), method: $('purMethod').value };
+      $('btnSavePurchase').disabled = true; $('btnSavePurchase').textContent = 'Memproses...'; showMsg('purMessage', 'Menyimpan...');
+
+      google.script.run.withSuccessHandler(res => {
+        $('btnSavePurchase').disabled = false; $('btnSavePurchase').textContent = '💾 Simpan & Tambah Stok';
+        showMsg('purMessage', res.message, false, true);
+        cart = []; renderCart(); $('purSupplier').value = ''; $('purDiscount').value = '0'; $('purExtra').value = '0';
+        purchaseReqId = generatePurReqId(); loadProducts(); alert('Sukses! Stok bertambah.');
+      }).withFailureHandler(err => {
+        $('btnSavePurchase').disabled = false; $('btnSavePurchase').textContent = '💾 Simpan & Tambah Stok';
+        showMsg('purMessage', err.message || err, true);
+      }).savePurchase(payload);
+    }
+
+    function start() {
+      if (!(window.google && google.script)) { $('connection').textContent = 'Pratinjau Lokal'; return; }
+      google.script.run.withSuccessHandler(info => {
+        connected = true; shopName = info.shopName;
+        $('shopTitle').textContent = shopName;
+        $('connection').textContent = 'Terhubung: ' + info.databaseName;
+        loadProducts(); loadReportData();
+      }).getAppInfo();
+    }
+    calculate();
+    start();
+  </script>
+</body>
+</html>
